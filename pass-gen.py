@@ -10,9 +10,6 @@ alphanum = st.ascii_letters + st.digits + st.punctuation
 passwd = []
 
 
-
-
-
 def gen(passwordLength):
     global passwordHolder
     for _ in alphanum:
@@ -28,9 +25,22 @@ def gen(passwordLength):
 def store_pass(password):
     with open('passfile', 'a+') as pass_file:
         
-        pass_file.write(args.application +': ' + gen(15) + '\n')
+        pass_file.write(args.application +':' + gen(15) + '\n') 
         pass_file.close
 #check if gen-pass has been created
+
+    #iterate through list check if website/application name exist in the list
+def pass_checker(application):
+    with open('passfile','r') as file:
+        x = file.read()
+        if application not in x:      
+            print('[+] Succesfully created ')  
+            store_pass(gen(args.passwordLength))
+
+        else:
+            print('[+] Password already exists for this application {}'.format(args.application))         
+
+
 #encrypt file after password are stored
 #create command line args
 def commandline():
@@ -38,11 +48,7 @@ def commandline():
     parser.add_argument('-p', '--app', dest='application', help='choose the application you want the password to be generated for')
     parser.add_argument('-l', '--length', dest='passwordLength', help='specify password length')
 
-
-
     args = parser.parse_args()
-    
-
     if not args.application :
         print('[+] Please ' + args.application.help)
     elif not  args.passwordLength:
@@ -50,16 +56,10 @@ def commandline():
     else:
         return args
 
+if __name__ == "__main__":
 
-
-
-
-
-
-
-args = commandline()
-gen(args.passwordLength)
-store_pass(gen(args.passwordLength))
+    args = commandline()
+    gen(args.passwordLength)
+    pass_checker(args.application)
+    
             
-    # print(gen(args.passwordLength))
-
