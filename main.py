@@ -68,31 +68,25 @@ def commandline():
 
 if __name__ == "__main__":
     args = commandline()
-    global encryptor
-    global secret_pass
-    global loaded_key
-
-    encryptor=encrpt.Encryptor()
-
-    mykey=encryptor.key_create()
-    secret_pass = encryptor.getKey(args.password )
-    encryptor.key_write(mykey, 'mykey.key')
-    loaded_key=encryptor.key_load('mykey.key')
-
-
     
 
+    
     if args.encrypted_file:
+        encryptor=encrpt.Encryptor()
+        secret_pass = encryptor.getKey(args.password )
+
+        mykey=encryptor.key_create()
+
+        encryptor.key_write(mykey, 'mykey.key')
+        loaded_key=encryptor.key_load('mykey.key')
+
+
+
         encryptor.file_encrypt(loaded_key,  args.encrypted_file, 'new',args.password)
-
     elif args.decrypted_file:
-
         if encryptor.getKey(args.password ) == secret_pass:
-
             encryptor.file_decrypt(loaded_key, 'new', args.decrypted_file, args.password)
-            
         else:
-
             print('[-] Wrong pasword.Please try again to Decrypt file')
     else:
 
