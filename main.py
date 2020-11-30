@@ -24,6 +24,7 @@ def store_pass(password):
     with open('passfile', 'a+') as pass_file:
         
         pass_file.write(args.application +':' + gen(15) + '\n') 
+        print
         pass_file.close
 
     #check if gen-pass has been created
@@ -68,7 +69,9 @@ def commandline():
 
 if __name__ == "__main__":
     args = commandline()
-    
+    encryptor=encrpt.Encryptor()
+    secret_pass = encryptor.getKey(args.password )
+
 
     
     if args.encrypted_file:
@@ -84,6 +87,9 @@ if __name__ == "__main__":
 
         encryptor.file_encrypt(loaded_key,  args.encrypted_file, 'new',args.password)
     elif args.decrypted_file:
+        loaded_key=encryptor.key_load('mykey.key')
+
+
         if encryptor.getKey(args.password ) == secret_pass:
             encryptor.file_decrypt(loaded_key, 'new', args.decrypted_file, args.password)
         else:
