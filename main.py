@@ -3,12 +3,19 @@ import string as st
 import random as rd 
 import argparse as arg
 import encrpt
+import subprocess as sb
 
 
 #generate alphanumeric charactor
 alphanum = st.ascii_letters + st.digits + st.punctuation
 
 passwd = []
+global application
+global length
+global file_to_encrypt
+file_to_encrypt = ''
+application = ''
+length = 0
 
 
 def gen(passwrdLength):
@@ -20,11 +27,10 @@ def gen(passwrdLength):
     passwordHolder = ''.join(passwd)
     return passwordHolder
 #store the pass in a file
-def store_pass(password):
+def store_pass(password, app):
     with open('passfile', 'a+') as pass_file:
         
-        pass_file.write(args.application +':' + gen(15) + '\n') 
-        print
+        pass_file.write(app +':' + gen(15) + '\n') 
         pass_file.close
 
     #check if gen-pass has been created
@@ -35,72 +41,91 @@ def pass_checker(application):
     #iterate through list check if website/application name exist in the list
         if application not in x:      
             print('[+] Succesfully created ')  
-            store_pass(gen(args.passwrdLength))
+            store_pass(gen(length), application)
 
         else:
-            print('[+] Password already exists for this application {}'.format(args.application))         
+            print('[x] Password already exists for this application {}'.format(application))         
+
+def main():
+    try:
+        while True:
+
+            options = input("please choose:\n 1)To generate password and save it\n 2)encrypt file\n 3)decrypt file \nChoice: ")
+        
+            if int(options) == 1 :
+
+                file_name = input('what would you like your password file to be called: ')
+                
+                sb.run(['touch' , file_name])
+
+                #user input for appplication  
+                application = input('please choose an application you would like a password to be generated for: ')
+                #user input for password length
+                length = input('please choose the length of the password to be generated: ')
+                #store password
+                if length != 0 and application != '' :
+                    gen(length)
+                    pass_checker(application)
+                else:
+                    print('please enter an application and password')
+                    continue
+                #ask user if they want to encrypt file or decrypt
+                # options2 = input("Do you want to encrypt file or Decrypt\n if you want to encrypt press '1' if you would like to decrypt press '2':")
+                    #if encrypt 
+            elif int(options) == 2:
+                encryptor=encrpt.Encryptor()
+                enc_pas = input('please enter the password you want to encrypt file: ')
+
+                
+                file_to_encrypt = input('Name of file to be encrypted? ')
+                global ecrypt_pass
+                ecrypt_pass = encryptor.getKey(enc_pas )
+                mykey=encryptor.key_create()
+                # encryptor.key_write(bytes(enc_pas, 'utf-8'), 'mykey.key' )
+                encryptor.key_write(mykey, 'mykey.key')
+                loaded_key=encryptor.key_load('mykey.key')
+                encryptor.file_encrypt(loaded_key, file_to_encrypt , 'new')
+                with open('mykey.key', 'a') as pass_file:
+                    pass_file.write('\n' + str(ecrypt_pass))
+                    pass_file.close()
 
 
-#encrypt file after password are stored
-#create command line args
-def commandline():
-    parser = arg.ArgumentParser(description='choose which app is the pass generated and length')
-    parser.add_argument('-a', '--app', dest='application', help='choose the application you want the password to be generated for', required=True)
-    parser.add_argument('-l', '--length', dest='passwrdLength', help='specify password length', required=True)
-    # parser.add_argument('-ef', )
-    parser.add_argument('-e', '--encrypt', dest='encrypted_file', help='specify password length')
-    parser.add_argument('-d', '--decrypt', dest='decrypted_file', help='specify password length')
-    parser.add_argument('-p', '--password', dest='password', help='specify password length' )
+                # provide password that will be used during decryption
+            #if decrypt 
+            elif int(options) == 3:
+                encryptor=encrpt.Encryptor()
+                with open('mykey.key', 'r') as pass_file:
+                    # pass_file.write('\n' + str(ecrypt_pass))
+                    passwd1 = pass_file.readlines()[1]
+                    pass_file.close()
 
-
-    args = parser.parse_args()
-    if not args.application :
-        print('[+] Please choose an application that the password will be used for. ' )
-    elif not  args.passwrdLength:
-        print('[+] Please specify a password length  ' )
-    # elif not args.encrypted_file:
-    #     print('[+] please choose a file location ')
-    # elif not args.decrypted_file:
-    #     print('[+] please choose a password to encrypt file with')
-    # elif not args.password:
-    #     print('[+] please choose a password to encrypt file with')
-    else:
-        return args
-
-if __name__ == "__main__":
-    args = commandline()
-    encryptor=encrpt.Encryptor()
-    secret_pass = encryptor.getKey(args.password )
-
-
-    
-    if args.encrypted_file:
-        encryptor=encrpt.Encryptor()
-        secret_pass = encryptor.getKey(args.password )
-
-        mykey=encryptor.key_create()
-
-        encryptor.key_write(mykey, 'mykey.key')
-        loaded_key=encryptor.key_load('mykey.key')
-
-
-
-        encryptor.file_encrypt(loaded_key,  args.encrypted_file, 'new',args.password)
-    elif args.decrypted_file:
-        loaded_key=encryptor.key_load('mykey.key')
-
-
-        if encryptor.getKey(args.password ) == secret_pass:
-            encryptor.file_decrypt(loaded_key, 'new', args.decrypted_file, args.password)
-        else:
-            print('[-] Wrong pasword.Please try again to Decrypt file')
-    else:
-
-        gen(args.passwrdLength)
-    
-        pass_checker(args.application)
-
-
-   
+                dec_pas = input('please enter the password you used to encrypt file: ')
+                loaded_key=encryptor.key_load('mykey.key')
+                
+                new = encryptor.getKey(dec_pas)
+            #check if password provided during encryption is the same as the one being provided during decryption of file
+                if str(new) == str(passwd1):
+                    encryptor.file_decrypt(loaded_key, 'new', 'dec')
+                    print('thank you')
+                else:
+                    print(new)
+                    print(passwd1)
+                    print('[-] Wrong password.Please try again to Decrypt file')
+            #ask for password before decrypting
+            else:
+                print('Thank you!')
+    except KeyboardInterrupt :
+        print('[+] Script exited!!!')
+    # encryptor=encrpt.Encryptor()
     
             
+
+# b'u\x0b\xe7\xccR\xba\x8dPf8\x1c_5\xc9\x15,A\xd9X\xa2\x06\xcf\x0c^\xf4&\x026*G\xd9\x8a\xedn\r\x97\x8b\xd7\x02C\x04\x89U>\xe6g\xdf\xa6\xeaL\x7ffA\xbb\xa8qC\xc9\x08\x93~\xd8\xe1\xaa'
+# b'u\x0b\xe7\xccR\xba\x8dPf8\x1c_5\xc9\x15,A\xd9X\xa2\x06\xcf\x0c^\xf4&\x026*G\xd9\x8a\xedn\r\x97\x8b\xd7\x02C\x04\x89U>\xe6g\xdf\xa6\xeaL\x7ffA\xbb\xa8qC\xc9\x08\x93~\xd8\xe1\xaa'
+
+
+
+
+
+if __name__ == "__main__":
+    main()

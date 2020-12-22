@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 from cryptography.fernet import Fernet
 import hashlib
 import main
@@ -25,7 +24,7 @@ class Encryptor():
         hasher = hashlib.sha512(password.encode('utf-8'))
         return hasher.digest()
 
-    def file_encrypt(self, key, original_file, new_file, password):
+    def file_encrypt(self, key, original_file, new_file):
             
         f = Fernet(key)
 
@@ -40,7 +39,7 @@ class Encryptor():
         
 
 
-    def file_decrypt(self, key, encrypted_file, decrypted_file, password): 
+    def file_decrypt(self, key, encrypted_file, decrypted_file): 
 
                 
         f = Fernet(key)
@@ -52,7 +51,3 @@ class Encryptor():
 
         with open(decrypted_file, 'wb') as file:
             file.write(decrypted)
-
-
-
-
